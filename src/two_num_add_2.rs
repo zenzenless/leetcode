@@ -20,7 +20,7 @@ impl ListNode {
     fn from_vec(vec: Vec<i32>) -> Option<Box<ListNode>> {
         let mut head = None;
         let mut cur = &mut head;
-        for v in vec.into_iter().rev() {
+        for v in vec.into_iter(){
             let node = ListNode::new(v);
             cur.replace(Box::new(node));
             cur = &mut cur.as_mut().unwrap().next;

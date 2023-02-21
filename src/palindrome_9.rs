@@ -8,7 +8,7 @@
 impl Solution {
     pub fn is_palindrome(x: i32) -> bool {
         let s=x.to_string();
-        let mut v=s.chars().collect::<Vec<char>>();
+        let  v=s.chars().collect::<Vec<char>>();
         for i in 0..v.len()/2 {
             if v[i]!=v[v.len()-1-i] {
                 return false;
