@@ -10,6 +10,8 @@ mod number_reverse_7;
 mod bigram_1078;
 mod sum_four_nums_18;
 mod reversal_tree_226;
+mod binary_tree_preorder_traversal_144;
+mod implement_queue_using_stacks232;
 fn main() {
     let reference_to_nothing = dangle();
 }
