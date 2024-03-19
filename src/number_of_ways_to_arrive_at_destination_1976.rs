@@ -7,10 +7,11 @@
 
 // @lcpr-template-start
 
-use std::cmp::Ordering;
+
 
 // @lcpr-template-end
 // @lc code=start
+use std::{cmp::Ordering, collections::BinaryHeap};
 impl Solution {
     pub fn count_paths(n: i32, roads: Vec<Vec<i32>>) -> i32 {
         let n=n as usize;
@@ -22,17 +23,17 @@ impl Solution {
         }
         //经过这个点的路径,只保留最小经过时间的路径 map_wp= [](时间,路径条数)
         let mut map_wp: Vec<((usize, usize))> = vec![(0, 0); n as usize];
+        map_wp[0]=(0,1);
         let first = wp {
             current: 0,
             // walk: vec![false; n as usize],
-            pre:0,
-            last:0,
             time: 0,
         };
-        let mut wait = vec![first];
+        let mut wait=BinaryHeap::new();
+         //let mut wait = vec![];
+        wait.push(first);
         while let Some(way) = wait.pop() {
             let last = way.current;
-
             //如果当前路径是最后的一个节点，则跳过
             if last==n-1{
                 continue;
@@ -40,61 +41,40 @@ impl Solution {
 
             //如果到达当前位置的时间比记录的大，则跳过
             let way_to_here_min_time=&map_wp[last].0;
+            let way_nums_to_here=map_wp[last].1;
             if *way_to_here_min_time!=0&&*way_to_here_min_time<way.time{
                 continue;
             }
 
             let next_nodes= {
                 let to = &road_map[last];
-                //过滤出这条路径还没去过的地方
                 to.iter()
-                    .filter(|&x| x.0 != 0 && !{
-                        if x.0>100{
-                            way.last==1<<x.0|way.last
-                        }else{
-                            way.pre==1<<x.0|way.pre
-                        }
-                    })
             };
             //去往下一个点，且时间是所有路径中最少的
             for (next,to_next_node_time) in next_nodes{
+                if *next==0{
+                    continue;
+                }
                 //从0点开始，去到下一个点的时间 = 到达这里的时间+去下一个节点的时间
                 let access_next_node_time=way.time+to_next_node_time;
                 //经过该点的路径
                 let ways_to_next=&mut map_wp[*next];
 
-                //添加到全局路径记录 添加到待继续走路径
-                //如果到达下一个节点的时间是所有路径中最少的话，则添加到记录
+                //如果最小路径时间相同，则相加
+                if ways_to_next.0==access_next_node_time{
 
-
-                //如果最小路径时间相同，则加1
-                if ways_to_next.0==0||ways_to_next.0==access_next_node_time{
-                    let mut next_wp=way.clone();
-                    next_wp.current=*next;
-                    if *next>100{
-                        next_wp.last=1<<*next;
-                    }else{
-                        next_wp.pre=1<<*next;
-                    }
-
-                    next_wp.time=access_next_node_time;
-                    wait.push(next_wp);
-                    ways_to_next.1+=1;
-                    ways_to_next.0=access_next_node_time;
+                    ways_to_next.1+=way_nums_to_here;
+                    ways_to_next.1=ways_to_next.1%1_000_000_007;
+                    
                     continue;
                 }
 
-                //如果是比其它路径更少的时间，重置路径条数为1，记录时间
-                if ways_to_next.0>access_next_node_time{
-                    ways_to_next.1=1;
+                //如果是比其它路径更少的时间，路径条数为当前条数，记录时间
+                if ways_to_next.0==0||ways_to_next.0>access_next_node_time{
+                    ways_to_next.1=way_nums_to_here;
                     ways_to_next.0=access_next_node_time;
                     let mut next_wp=way.clone();
                     next_wp.current=*next;
-                     if *next>100{
-                        next_wp.last=1<<*next;
-                    }else{
-                        next_wp.pre=1<<*next;
-                    }
                     next_wp.time=access_next_node_time;
                     wait.push(next_wp);
                 }
@@ -107,16 +87,18 @@ impl Solution {
 
     }
 }
-//路径
-#[derive(Clone)]
+
+#[derive(Clone,PartialEq, Eq,Ord)]
 struct wp {
-    //路径经过的点的顺序
+    //当前位置
     current: usize,
-    //这条路径经过的地方,以及经过时花费的时间
-    pre: u128,
-    last:u128,
     //当前花费的时间
     time: usize,
+}
+impl PartialOrd for wp {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(other.time.cmp(&self.time))
+    }
 }
 // @lc code=end
 
@@ -140,9 +122,40 @@ fn test_func() {
         //     vec![0, 4, 5],
         //     vec![4, 6, 2],
         // ],
-        roads
+       roads
     );
     assert_eq!(6347247,p)
+}
+
+#[test]
+fn test_ord(){
+    let mut wait=BinaryHeap::new();
+     //let mut wait = vec![];
+    wait.push(wp {
+        current: 0,
+        // walk: vec![false; n as usize],
+        time: 0,
+    });
+
+    wait.push(wp {
+        current: 0,
+        // walk: vec![false; n as usize],
+        time: 3,
+    });
+
+
+    wait.push(wp {
+        current: 0,
+        // walk: vec![false; n as usize],
+        time: 1,
+    });
+
+    wait.push(wp {
+        current: 0,
+        // walk: vec![false; n as usize],
+        time: 4,
+    });
+    println!("{:?}",wait.peek().unwrap().time)
 }
 /*
 // @lcpr case=start
